@@ -16,8 +16,8 @@ type Message struct {
 	CreatedAt   *time.Time `json:"created_at"`
 	UpdatedAt   *time.Time `json:"updated_at"`
 	Archived    bool       `json:"archived"`
-	UserID      int        `json:"user_id"`
-	GameID      *int       `json:"game_id"`
+	UserID      string     `json:"user_id"`
+	GameID      *string    `json:"game_id"`
 }
 
 // MessageInput for incoming inserted messages
@@ -31,6 +31,11 @@ type MessageInput struct {
 // Messages is a slice of message.
 type Messages struct {
 	Messages []Message
+}
+
+// MessageOut is the message output for an insert
+type MessageOut struct {
+	ID string
 }
 
 // GetMessages gets all the messages. This should probably be on a per...game basis
@@ -88,25 +93,45 @@ func queryMessages(messages *Messages) error {
 // InsertMessage inserts a message to the database
 func InsertMessage(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
+	var err error
 	var messageInput MessageInput
-	err := decoder.Decode(&messageInput)
+	err = decoder.Decode(&messageInput)
+	out := MessageOut{}
+
 	if err != nil {
 		log.Print(err)
 	}
-	log.Println(messageInput)
+
+	out, err = insertMessageQuery(&messageInput)
+	if err != nil {
+		log.Print(err)
+		http.Error(w, `Internal Error`, http.StatusInternalServerError)
+		return
+	}
+	out1, err := json.Marshal(out)
+	if err != nil {
+		log.Print(err)
+		http.Error(w, `Internal Error`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(int(http.StatusOK))
+	w.Write(out1)
 }
 
-func insertMessageQuery() {
+func insertMessageQuery(messageInput *MessageInput) (MessageOut, error) {
 	var err error
 	insertStatement := `
-	INSERT INTO messages (message_text, created_at, user_id)
-	VALUES ($1, $2, $3)
+	INSERT INTO messages (message_text, created_at, user_id, game_id)
+	VALUES ($1, $2, $3, $4)
 	RETURNING id`
-	id := 0
-	err = DB.QueryRow(insertStatement, "Second Message", time.Now(), 1).Scan(&id)
+	out := MessageOut{}
+	err = DB.QueryRow(insertStatement, &messageInput.MessageText, time.Now(), &messageInput.UserID, &messageInput.GameID).Scan(&out.ID)
 	if err != nil {
 		log.Print(err)
+		return out, err
 	}
-	log.Println("New record ID is:", id)
-
+	log.Println("New record ID is:", out.ID)
+	return out, nil
 }

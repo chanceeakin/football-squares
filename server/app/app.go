@@ -49,6 +49,7 @@ func Run() {
 	DBInit()
 	defer DBCleanUp()
 	http.HandleFunc("/messages", GetMessages)
+	http.HandleFunc("/games", GetGames)
 	http.HandleFunc("/users", GetUsers)
 	http.HandleFunc("/new-message", InsertMessage)
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
