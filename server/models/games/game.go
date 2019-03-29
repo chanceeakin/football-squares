@@ -1,10 +1,9 @@
-package app
+package game
 
 import (
-	"encoding/json"
-	"log"
-	"net/http"
 	"time"
+
+	db "github.com/chanceeakin/football-squares/server/db"
 )
 
 // Game is a data struct for a given game
@@ -22,31 +21,14 @@ type Games struct {
 	Games []Game
 }
 
-// GetGames gets all the messages. This should probably be on a per...game basis
-func GetGames(w http.ResponseWriter, r *http.Request) {
-	games := Games{}
-
-	err := queryGames(&games)
-	if err != nil {
-		log.Print(err)
-		http.Error(w, `Internal Error`, http.StatusInternalServerError)
-		return
-	}
-
-	out, err := json.Marshal(games)
-	if err != nil {
-		log.Print(err)
-		http.Error(w, `Internal Error`, http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(int(http.StatusOK))
-	w.Write(out)
+// GetInput is the struct for a single game id.
+type GetInput struct {
+	ID string `json:"id"`
 }
 
-func queryGames(games *Games) error {
-	rows, err := DB.Query(`SELECT * FROM games;`)
+// QueryGames for a series of games
+func QueryGames(games *Games) error {
+	rows, err := db.DB.Query(`SELECT * FROM games;`)
 	if err != nil {
 		return err
 	}
@@ -71,4 +53,22 @@ func queryGames(games *Games) error {
 		return err
 	}
 	return nil
+}
+
+// QueryGame for a series of games
+func QueryGame(input *GetInput) (Game, error) {
+	returnGame := Game{}
+	row := db.DB.QueryRow(`SELECT * FROM games where id=$1;`, &input.ID)
+	err := row.Scan(
+		&returnGame.ID,
+		&returnGame.Title,
+		&returnGame.CreatedAt,
+		&returnGame.UpdatedAt,
+		&returnGame.BegunAt,
+		&returnGame.FinishedAt,
+	)
+	if err != nil {
+		return returnGame, err
+	}
+	return returnGame, nil
 }
