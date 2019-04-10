@@ -18,6 +18,7 @@ func Run(d *db.InitData) {
 	http.Handle("/message", middleware.Logger(http.HandlerFunc(controllers.MessageHandler)))
 	http.Handle("/games", middleware.Logger(http.HandlerFunc(controllers.GetGames)))
 	http.Handle("/game", middleware.Logger(http.HandlerFunc(controllers.GameHandler)))
+	http.Handle("/game/messages", middleware.Logger(http.HandlerFunc(controllers.MessageByGameHandler)))
 	http.Handle("/users", middleware.Logger(http.HandlerFunc(controllers.UsersHandlers)))
 	http.Handle("/user", middleware.Logger(http.HandlerFunc(controllers.UserHandlers)))
 	http.Handle("/", middleware.Logger(http.HandlerFunc(controllers.ErrorHandler)))

@@ -71,6 +71,31 @@ func getMessage(w http.ResponseWriter, r *http.Request) {
 	response.SendJSON(w, val)
 }
 
+//MessageByGameHandler handles returning messages per game
+func MessageByGameHandler(w http.ResponseWriter, r *http.Request) {
+	var input common.ID
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		http.Error(w, `Bad Request`, http.StatusBadRequest)
+		return
+	}
+
+	if r.Method != http.MethodGet {
+		log.Print("Message By Game not post")
+		http.Error(w, `Wrong Method`, http.StatusMethodNotAllowed)
+	}
+	messageArr, err := message.QueryMessagesByGame(&input)
+	if err != nil {
+		log.Print(err)
+		http.Error(w, `Internal Error`, http.StatusInternalServerError)
+		return
+	}
+
+	response.SendJSON(w, messageArr)
+
+}
+
 // MessageHandler is the switch for REST Methods
 func MessageHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {

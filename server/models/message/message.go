@@ -78,6 +78,37 @@ func QueryMessages(messages *Messages) error {
 	return nil
 }
 
+// QueryMessagesByGame returns a games' worth of messages
+func QueryMessagesByGame(i *common.ID) (*Messages, error) {
+	val := Messages{}
+	rows, err := db.DB.Query(`SELECT * FROM messages where game_id=$1;`, &i.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		message := Message{}
+		err = rows.Scan(
+			&message.ID,
+			&message.MessageText,
+			&message.CreatedAt,
+			&message.UpdatedAt,
+			&message.Archived,
+			&message.UserID,
+			&message.GameID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		val.Messages = append(val.Messages, message)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+	return &val, nil
+}
+
 // QueryMessage returns a single message
 func QueryMessage(i *common.ID) (Message, error) {
 	val := Message{}
