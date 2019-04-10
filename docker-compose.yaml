@@ -1,0 +1,25 @@
+version: "3.6"
+
+services:
+  api:
+    networks:
+      - backend
+    image: football-api:latest
+    ports:
+      - 8000:8000
+    volumes:
+      - ./:/go/src/football-squares
+  postgres:
+    networks:
+      - backend
+    ports:
+      - 5432:5432
+    image: postgres:latest
+    volumes:
+      - db_data:/var/lib/postgres
+
+volumes:
+  db_data:
+
+networks:
+  backend:

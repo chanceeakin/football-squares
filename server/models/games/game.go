@@ -1,9 +1,11 @@
 package game
 
 import (
+	"log"
 	"time"
 
-	db "github.com/chanceeakin/football-squares/server/db"
+	common "football-squares/server/common"
+	db "football-squares/server/db"
 )
 
 // Game is a data struct for a given game
@@ -21,9 +23,9 @@ type Games struct {
 	Games []Game
 }
 
-// GetInput is the struct for a single game id.
-type GetInput struct {
-	ID string `json:"id"`
+// PostInput is the input for a new game
+type PostInput struct {
+	Title string `json:"title"`
 }
 
 // QueryGames for a series of games
@@ -56,7 +58,7 @@ func QueryGames(games *Games) error {
 }
 
 // QueryGame for a series of games
-func QueryGame(input *GetInput) (Game, error) {
+func QueryGame(input *common.ID) (Game, error) {
 	returnGame := Game{}
 	row := db.DB.QueryRow(`SELECT * FROM games where id=$1;`, &input.ID)
 	err := row.Scan(
@@ -71,4 +73,21 @@ func QueryGame(input *GetInput) (Game, error) {
 		return returnGame, err
 	}
 	return returnGame, nil
+}
+
+// PostGame savess a game record in the database
+func PostGame(input *PostInput) (common.ID, error) {
+	var err error
+	insertStatement := `
+	INSERT INTO games (title)
+	VALUES ($1)
+	RETURNING id;`
+	out := common.ID{}
+	err = db.DB.QueryRow(insertStatement, &input.Title).Scan(&out.ID)
+	if err != nil {
+		log.Print(err)
+		return out, err
+	}
+	log.Println("New record ID is:", out.ID)
+	return out, nil
 }

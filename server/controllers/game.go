@@ -2,7 +2,9 @@ package controller
 
 import (
 	"encoding/json"
-	game "github.com/chanceeakin/football-squares/server/models/games"
+	common "football-squares/server/common"
+	game "football-squares/server/models/games"
+	response "football-squares/server/response"
 	"log"
 	"net/http"
 )
@@ -18,21 +20,12 @@ func GetGames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := json.Marshal(gamesArr)
-	if err != nil {
-		log.Print(err)
-		http.Error(w, `Internal Error`, http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(int(http.StatusOK))
-	w.Write(out)
+	response.SendJSON(w, gamesArr)
 }
 
 // GetGame gets a single game
-func GetGame(w http.ResponseWriter, r *http.Request) {
-	var input game.GetInput
+func getGame(w http.ResponseWriter, r *http.Request) {
+	var input common.ID
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
 	if err != nil {
@@ -47,14 +40,44 @@ func GetGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := json.Marshal(val)
+	response.SendJSON(w, val)
+}
+
+func postGame(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var input game.PostInput
+	var out common.ID
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&input)
+
+	if err != nil {
+		log.Print(err)
+		http.Error(w, `Bad Request`, http.StatusBadRequest)
+		return
+	}
+
+	out, err = game.PostGame(&input)
 	if err != nil {
 		log.Print(err)
 		http.Error(w, `Internal Error`, http.StatusInternalServerError)
 		return
 	}
+	response.SendJSON(w, out)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(int(http.StatusOK))
-	w.Write(out)
+}
+
+// GameHandler is the switch for REST Methods
+func GameHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		getGame(w, r)
+	case http.MethodPost:
+		postGame(w, r)
+	case http.MethodPut:
+		// Update an existing record.
+	case http.MethodDelete:
+		// Remove the record.
+	default:
+		http.Error(w, `Not Found`, http.StatusNotFound)
+	}
 }

@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	controllers "github.com/chanceeakin/football-squares/server/controllers"
-	db "github.com/chanceeakin/football-squares/server/db"
-	middleware "github.com/chanceeakin/football-squares/server/middleware"
+	controllers "football-squares/server/controllers"
+	db "football-squares/server/db"
+	middleware "football-squares/server/middleware"
 )
 
 // Run the app
@@ -15,10 +15,12 @@ func Run(d *db.InitData) {
 	db.Init(d)
 	defer db.CleanUp()
 	http.Handle("/messages", middleware.Logger(http.HandlerFunc(controllers.GetMessages)))
+	http.Handle("/message", middleware.Logger(http.HandlerFunc(controllers.MessageHandler)))
 	http.Handle("/games", middleware.Logger(http.HandlerFunc(controllers.GetGames)))
-	http.Handle("/game", middleware.Logger(http.HandlerFunc(controllers.GetGame)))
-	http.Handle("/users", middleware.Logger(http.HandlerFunc(controllers.GetUsers)))
-	http.Handle("/new-message", middleware.Logger(http.HandlerFunc(controllers.PostMessage)))
+	http.Handle("/game", middleware.Logger(http.HandlerFunc(controllers.GameHandler)))
+	http.Handle("/users", middleware.Logger(http.HandlerFunc(controllers.UsersHandlers)))
+	http.Handle("/user", middleware.Logger(http.HandlerFunc(controllers.UserHandlers)))
+	http.Handle("/", middleware.Logger(http.HandlerFunc(controllers.ErrorHandler)))
 	log.Fatal(http.ListenAndServe(uriString, nil))
 
 }

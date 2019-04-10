@@ -13,9 +13,21 @@ reference users
 
 scripting
 
-- seed script for DB
+## CI/CD
+
 - up/down for migrations
+  - when you actually have migrations
 - some sort of CI/CD stuff as well
-- dockerize this shit.
-  - Is there a way to do hot building in go with a dockerized container? Why? Why the fuck not?
+  - get your app engine set up, maybe?
 - I really need to learn GCP. and I really don't want to learn GCP. Ugh.
+
+## Code
+
+- endpoints
+  - messages
+    - getMessagesByGame
+  - bets
+    - getBets
+    - postaBet
+- testing strategy for golang
+  - do some research

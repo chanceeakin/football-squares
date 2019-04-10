@@ -1,7 +1,8 @@
 package message
 
 import (
-	db "github.com/chanceeakin/football-squares/server/db"
+	common "football-squares/server/common"
+	db "football-squares/server/db"
 	"log"
 	"time"
 )
@@ -30,18 +31,14 @@ type Messages struct {
 	Messages []Message
 }
 
-// Out is the message output for an insert
-type Out struct {
-	ID string
-}
-
-func PostMessageQuery(messageInput *Input) (Out, error) {
+// PostMessageQuery posts a single message
+func PostMessageQuery(messageInput *Input) (common.ID, error) {
 	var err error
 	insertStatement := `
 	INSERT INTO messages (message_text, created_at, user_id, game_id)
 	VALUES ($1, $2, $3, $4)
-	RETURNING id`
-	out := Out{}
+	RETURNING id;`
+	out := common.ID{}
 	err = db.DB.QueryRow(insertStatement, &messageInput.MessageText, time.Now(), &messageInput.UserID, &messageInput.GameID).Scan(&out.ID)
 	if err != nil {
 		log.Print(err)
@@ -79,4 +76,24 @@ func QueryMessages(messages *Messages) error {
 		return err
 	}
 	return nil
+}
+
+// QueryMessage returns a single message
+func QueryMessage(i *common.ID) (Message, error) {
+	val := Message{}
+	row := db.DB.QueryRow(`SELECT * FROM messages where id=$1;`, &i.ID)
+	err := row.Scan(
+		&val.ID,
+		&val.MessageText,
+		&val.CreatedAt,
+		&val.UpdatedAt,
+		&val.Archived,
+		&val.UserID,
+		&val.GameID,
+	)
+	if err != nil {
+		log.Print(err)
+		return val, err
+	}
+	return val, nil
 }

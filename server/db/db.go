@@ -15,6 +15,7 @@ type InitData struct {
 	User     string
 	Password string
 	Dbname   string
+	DbHost   string
 	DbPort   int
 }
 
@@ -26,7 +27,7 @@ func Init(d *InitData) {
 	var err error
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
-		d.Host, d.DbPort, d.User, d.Password, d.Dbname)
+		d.DbHost, d.DbPort, d.User, d.Password, d.Dbname)
 	DB, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)

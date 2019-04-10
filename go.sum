@@ -1,0 +1,6 @@
+github.com/chanceeakin/football-squares v0.0.0-20190329033319-28c9401199c2 h1:YbIMBb3V0FDp+z0eUu9yVvK5qmWzP3Id/o8O1Mbr64Q=
+github.com/chanceeakin/football-squares v0.0.0-20190329033319-28c9401199c2/go.mod h1:Re9R320pCW4qA9+FhG8l7Dh84mhacfOatVYR75oiz0w=
+github.com/gorilla/mux v1.7.0 h1:tOSd0UKHQd6urX6ApfOn4XdBMY6Sh1MfxV3kmaazO+U=
+github.com/gorilla/mux v1.7.0/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
+github.com/lib/pq v1.0.0 h1:X5PMW56eZitiTeO7tKzZxFCSpbFZJtkMMooicw2us9A=
+github.com/lib/pq v1.0.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=

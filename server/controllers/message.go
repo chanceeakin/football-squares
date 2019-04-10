@@ -2,7 +2,9 @@ package controller
 
 import (
 	"encoding/json"
-	message "github.com/chanceeakin/football-squares/server/models/message"
+	common "football-squares/server/common"
+	message "football-squares/server/models/message"
+	response "football-squares/server/response"
 	// post gres
 	_ "github.com/lib/pq"
 	"log"
@@ -11,6 +13,10 @@ import (
 
 // GetMessages gets all the messages. This should probably be on a per...game basis
 func GetMessages(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, `Not Found`, http.StatusNotFound)
+		return
+	}
 	messagesArr := message.Messages{}
 
 	err := message.QueryMessages(&messagesArr)
@@ -20,28 +26,21 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := json.Marshal(messagesArr)
-	if err != nil {
-		log.Print(err)
-		http.Error(w, `Internal Error`, http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(int(http.StatusOK))
-	w.Write(out)
+	response.SendJSON(w, messagesArr)
 }
 
 // PostMessage inserts a message to the database
-func PostMessage(w http.ResponseWriter, r *http.Request) {
+func postMessage(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var messageInput message.Input
-	var out message.Out
+	var out common.ID
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&messageInput)
 
 	if err != nil {
 		log.Print(err)
+		http.Error(w, `Bad Request`, http.StatusBadRequest)
+		return
 	}
 
 	out, err = message.PostMessageQuery(&messageInput)
@@ -50,14 +49,40 @@ func PostMessage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `Internal Error`, http.StatusInternalServerError)
 		return
 	}
-	out1, err := json.Marshal(out)
+	response.SendJSON(w, out)
+}
+
+func getMessage(w http.ResponseWriter, r *http.Request) {
+	var input common.ID
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
 	if err != nil {
-		log.Print(err)
+		http.Error(w, `Bad Request`, http.StatusBadRequest)
+		return
+	}
+
+	val, err1 := message.QueryMessage(&input)
+	if err1 != nil {
+		log.Print(err1)
 		http.Error(w, `Internal Error`, http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(int(http.StatusOK))
-	w.Write(out1)
+	response.SendJSON(w, val)
+}
+
+// MessageHandler is the switch for REST Methods
+func MessageHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		getMessage(w, r)
+	case http.MethodPost:
+		postMessage(w, r)
+	case http.MethodPut:
+		// Update an existing record.
+	case http.MethodDelete:
+		// Remove the record.
+	default:
+		http.Error(w, `Not Found`, http.StatusNotFound)
+	}
 }
