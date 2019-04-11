@@ -23,11 +23,33 @@ scripting
 
 ## Code
 
+- database
+
+  - users
+    - password field
+    - game admin(s)
+
+- session storage
+
+  - redis
+
 - endpoints
-  - messages
-    - getMessagesByGame
+  - login/logout
+    - JWT?
+  - users
+    - password
+  - games
+    - put
+    - delete/archive
+    - join a game
+    - leave a game
+    - open a game
+    - close a game
   - bets
     - getBets
     - postaBet
 - testing strategy for golang
   - do some research
+
+* frontend
+  - reimagine it in yew. because why not
