@@ -6,6 +6,7 @@ import (
 	game "football-squares/server/models/games"
 	response "football-squares/server/response"
 	routes "football-squares/server/routes"
+	"io"
 
 	"log"
 	"net/http"
@@ -31,7 +32,14 @@ func GameRoutes() []routes.Route {
 			Path:        "/game",
 			HandlerFunc: postGame,
 			Method:      "POST",
-		})
+		},
+		routes.Route{
+			Name:        "Archive Game",
+			Path:        "/game/archive",
+			HandlerFunc: archiveGame,
+			Method:      "PUT",
+		},
+	)
 	return gameRoutes
 }
 
@@ -85,6 +93,34 @@ func postGame(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Print(err)
 		http.Error(w, `Internal Error`, http.StatusInternalServerError)
+		return
+	}
+	response.SendJSON(w, out)
+
+}
+
+func archiveGame(w http.ResponseWriter, r *http.Request) {
+	var err error
+	input := new(common.ID)
+	var out common.Success
+	err = json.NewDecoder(r.Body).Decode(input)
+
+	// fmt.Print(input)
+	// if *input.ID == "" {
+	// 	response.SendError(w, err, http.StatusBadRequest)
+	// 	return
+	// }
+
+	switch {
+	case err == io.EOF:
+	case err != nil:
+		response.SendError(w, err, http.StatusBadRequest)
+		return
+	}
+
+	out, err = game.ArchiveGame(input)
+	if err != nil {
+		response.SendError(w, err, http.StatusInternalServerError)
 		return
 	}
 	response.SendJSON(w, out)

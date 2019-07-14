@@ -11,6 +11,7 @@ import (
 const selectAllSQL = `SELECT * FROM games;`
 const selectOneSQL = `SELECT * FROM games where id=$1;`
 const insertOneSQL = `INSERT INTO games (title) VALUES ($1) RETURNING id;`
+const archiveOneSQL = `UPDATE games SET archived=true WHERE id=$1 RETURNING id;`
 
 // Game is a data struct for a given game
 type Game struct {
@@ -20,6 +21,7 @@ type Game struct {
 	UpdatedAt  *time.Time `json:"updated_at"`
 	BegunAt    *time.Time `json:"begun_at"`
 	FinishedAt *time.Time `json:"finished_at"`
+	Archived   bool       `json:"archived"`
 }
 
 // Games is a slice of game.
@@ -48,6 +50,7 @@ func QueryGames(games *Games) error {
 			&game.UpdatedAt,
 			&game.BegunAt,
 			&game.FinishedAt,
+			&game.Archived,
 		)
 		if err != nil {
 			return err
@@ -72,6 +75,7 @@ func QueryGame(input *common.ID) (Game, error) {
 		&returnGame.UpdatedAt,
 		&returnGame.BegunAt,
 		&returnGame.FinishedAt,
+		&returnGame.Archived,
 	)
 	if err != nil {
 		return returnGame, err
@@ -90,4 +94,23 @@ func PostGame(input *PostInput) (common.ID, error) {
 	}
 	log.Println("New record ID is:", out.ID)
 	return out, nil
+}
+
+//ArchiveGame archives a game
+func ArchiveGame(input *common.ID) (common.Success, error) {
+	var err error
+	success := common.Success{}
+	out := common.ID{}
+	err = db.DB.QueryRow(archiveOneSQL, &input.ID).Scan(&out.ID)
+
+	if err != nil {
+		log.Print(err)
+		success.Success = false
+		return success, err
+	}
+	log.Println("Archived", &input.ID)
+
+	success.Success = true
+	return success, nil
+
 }

@@ -13,7 +13,8 @@ CREATE TABLE games (
   created_at TIMESTAMP default current_timestamp,
   updated_at TIMESTAMP,
   begun_at TIMESTAMP,
-  finished_at TIMESTAMP
+  finished_at TIMESTAMP,
+  archived BOOLEAN NOT NULL default false
 );
 
 CREATE TABLE messages (
@@ -40,3 +41,14 @@ CREATE TABLE bets (
   created_at TIMESTAMP,
   updated_at TIMESTAMP
 );
+
+CREATE OR REPLACE FUNCTION update_modified_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+
+CREATE TRIGGER game_updated_at BEFORE UPDATE ON games FOR EACH ROW EXECUTE PROCEDURE  update_modified_column();

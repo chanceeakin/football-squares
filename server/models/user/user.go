@@ -1,10 +1,18 @@
 package user
 
 import (
+	common "football-squares/server/common"
 	db "football-squares/server/db"
-	"log"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 )
+
+const selectAllSQL = `SELECT id, first_name, last_name, email, is_admin FROM users;`
+const selectOneSQL = `SELECT id, first_name, last_name, email, is_admin FROM users where id=$1;`
+const insertOneSQL = `
+	INSERT INTO users (first_name, last_name, email, password)
+	VALUES ($1, $2, $3, $4)
+	RETURNING id`
 
 // User is a data struct for a given user
 type User struct {
@@ -35,22 +43,17 @@ type GetInput struct {
 	ID string `json:"id"`
 }
 
-// Out is the message output for an insert
-type Out struct {
-	ID string
-}
-
 //Input is for inserting a user
 type Input struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
-	Password string `json:"password"`
+	Password  string `json:"password"`
 }
 
 // QueryUsers queries the db for existing users.
 func QueryUsers(users *Users) error {
-	rows, err := db.DB.Query(`SELECT id, first_name, last_name, email, is_admin FROM users;`)
+	rows, err := db.DB.Query(selectAllSQL)
 	if err != nil {
 		log.Print(err)
 		return err
@@ -81,7 +84,7 @@ func QueryUsers(users *Users) error {
 // QueryUser finds a single user
 func QueryUser(input *GetInput) (NoPasswordUser, error) {
 	returnUser := NoPasswordUser{}
-	row := db.DB.QueryRow(`SELECT id, first_name, last_name, email, is_admin FROM users where id=$1;`, &input.ID)
+	row := db.DB.QueryRow(selectOneSQL, &input.ID)
 	err := row.Scan(
 		&returnUser.ID,
 		&returnUser.FirstName,
@@ -98,30 +101,26 @@ func QueryUser(input *GetInput) (NoPasswordUser, error) {
 
 func hashAndSalt(pwd string) string {
 
-    // Use GenerateFromPassword to hash & salt pwd.
-    // MinCost is just an integer constant provided by the bcrypt
-    // package along with DefaultCost & MaxCost.
-    // The cost can be any value you want provided it isn't lower
-    // than the MinCost (4)
-    hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
-    if err != nil {
-        log.Println(err)
-    }
-    // GenerateFromPassword returns a byte slice so we need to
-    // convert the bytes to a string and return it
-    return string(hash)
+	// Use GenerateFromPassword to hash & salt pwd.
+	// MinCost is just an integer constant provided by the bcrypt
+	// package along with DefaultCost & MaxCost.
+	// The cost can be any value you want provided it isn't lower
+	// than the MinCost (4)
+	hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
+	if err != nil {
+		log.Println(err)
+	}
+	// GenerateFromPassword returns a byte slice so we need to
+	// convert the bytes to a string and return it
+	return string(hash)
 }
 
 // InsertUser inserts a user into the DB
-func InsertUser(input *Input) (Out, error) {
+func InsertUser(input *Input) (common.ID, error) {
 	var err error
 	hashedPassword := hashAndSalt(input.Password)
-	insertStatement := `
-	INSERT INTO users (first_name, last_name, email, password)
-	VALUES ($1, $2, $3, $4)
-	RETURNING id`
-	out := Out{}
-	err = db.DB.QueryRow(insertStatement, &input.FirstName, &input.LastName, &input.Email, &hashedPassword).Scan(&out.ID)
+	out := common.ID{}
+	err = db.DB.QueryRow(insertOneSQL, &input.FirstName, &input.LastName, &input.Email, &hashedPassword).Scan(&out.ID)
 	if err != nil {
 		log.Print(err)
 		return out, err

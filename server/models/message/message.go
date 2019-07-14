@@ -9,7 +9,9 @@ import (
 
 const insertOneSQL = `INSERT INTO messages (message_text, created_at, user_id, game_id)
 	VALUES ($1, $2, $3, $4)
-	RETURNING id;`
+  RETURNING id;`
+const selectFromGameSQL = `SELECT * FROM messages where game_id=$1;`
+const selectAllSQL = `SELECT * FROM messages;`
 
 // Message data object
 type Message struct {
@@ -50,7 +52,7 @@ func PostMessageQuery(messageInput *Input) (common.ID, error) {
 
 // QueryMessages returns all messages
 func QueryMessages(messages *Messages) error {
-	rows, err := db.DB.Query(`SELECT * FROM messages;`)
+	rows, err := db.DB.Query(selectAllSQL)
 	if err != nil {
 		return err
 	}
@@ -81,7 +83,7 @@ func QueryMessages(messages *Messages) error {
 // QueryMessagesByGame returns a games' worth of messages
 func QueryMessagesByGame(i *common.ID) (*Messages, error) {
 	val := Messages{}
-	rows, err := db.DB.Query(`SELECT * FROM messages where game_id=$1;`, &i.ID)
+	rows, err := db.DB.Query(selectFromGameSQL, &i.ID)
 	if err != nil {
 		return nil, err
 	}

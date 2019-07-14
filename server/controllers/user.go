@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	common "football-squares/server/common"
 	user "football-squares/server/models/user"
 	response "football-squares/server/response"
 	routes "football-squares/server/routes"
@@ -68,7 +69,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 func postUser(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var userInput user.Input
-	var out user.Out
+	var out common.ID
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&userInput)
 

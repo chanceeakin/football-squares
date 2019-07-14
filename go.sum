@@ -1,5 +1,9 @@
+github.com/auth0/go-jwt-middleware v0.0.0-20170425171159-5493cabe49f7 h1:irR1cO6eek3n5uquIVaRAsQmZnlsfPuHNz31cXo4eyk=
+github.com/auth0/go-jwt-middleware v0.0.0-20170425171159-5493cabe49f7/go.mod h1:LWMyo4iOLWXHGdBki7NIht1kHru/0wM179h+d3g8ATM=
 github.com/chanceeakin/football-squares v0.0.0-20190329033319-28c9401199c2 h1:YbIMBb3V0FDp+z0eUu9yVvK5qmWzP3Id/o8O1Mbr64Q=
 github.com/chanceeakin/football-squares v0.0.0-20190329033319-28c9401199c2/go.mod h1:Re9R320pCW4qA9+FhG8l7Dh84mhacfOatVYR75oiz0w=
+github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
+github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/gorilla/mux v1.7.0 h1:tOSd0UKHQd6urX6ApfOn4XdBMY6Sh1MfxV3kmaazO+U=
 github.com/gorilla/mux v1.7.0/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
 github.com/gorilla/mux v1.7.1 h1:Dw4jY2nghMMRsh1ol8dv1axHkDwMQK2DHerMNJsIpJU=
