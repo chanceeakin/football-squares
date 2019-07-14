@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+const insertOneSQL = `INSERT INTO messages (message_text, created_at, user_id, game_id)
+	VALUES ($1, $2, $3, $4)
+	RETURNING id;`
+
 // Message data object
 type Message struct {
 	ID          string     `json:"id"`
@@ -34,12 +38,8 @@ type Messages struct {
 // PostMessageQuery posts a single message
 func PostMessageQuery(messageInput *Input) (common.ID, error) {
 	var err error
-	insertStatement := `
-	INSERT INTO messages (message_text, created_at, user_id, game_id)
-	VALUES ($1, $2, $3, $4)
-	RETURNING id;`
 	out := common.ID{}
-	err = db.DB.QueryRow(insertStatement, &messageInput.MessageText, time.Now(), &messageInput.UserID, &messageInput.GameID).Scan(&out.ID)
+	err = db.DB.QueryRow(insertOneSQL, &messageInput.MessageText, time.Now(), &messageInput.UserID, &messageInput.GameID).Scan(&out.ID)
 	if err != nil {
 		log.Print(err)
 		return out, err

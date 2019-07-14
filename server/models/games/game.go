@@ -8,6 +8,10 @@ import (
 	db "football-squares/server/db"
 )
 
+const selectAllSQL = `SELECT * FROM games;`
+const selectOneSQL = `SELECT * FROM games where id=$1;`
+const insertOneSQL = `INSERT INTO games (title) VALUES ($1) RETURNING id;`
+
 // Game is a data struct for a given game
 type Game struct {
 	ID         string     `json:"id"`
@@ -30,7 +34,7 @@ type PostInput struct {
 
 // QueryGames for a series of games
 func QueryGames(games *Games) error {
-	rows, err := db.DB.Query(`SELECT * FROM games;`)
+	rows, err := db.DB.Query(selectAllSQL)
 	if err != nil {
 		return err
 	}
@@ -60,7 +64,7 @@ func QueryGames(games *Games) error {
 // QueryGame for a series of games
 func QueryGame(input *common.ID) (Game, error) {
 	returnGame := Game{}
-	row := db.DB.QueryRow(`SELECT * FROM games where id=$1;`, &input.ID)
+	row := db.DB.QueryRow(selectOneSQL, &input.ID)
 	err := row.Scan(
 		&returnGame.ID,
 		&returnGame.Title,
@@ -78,12 +82,8 @@ func QueryGame(input *common.ID) (Game, error) {
 // PostGame savess a game record in the database
 func PostGame(input *PostInput) (common.ID, error) {
 	var err error
-	insertStatement := `
-	INSERT INTO games (title)
-	VALUES ($1)
-	RETURNING id;`
 	out := common.ID{}
-	err = db.DB.QueryRow(insertStatement, &input.Title).Scan(&out.ID)
+	err = db.DB.QueryRow(insertOneSQL, &input.Title).Scan(&out.ID)
 	if err != nil {
 		log.Print(err)
 		return out, err

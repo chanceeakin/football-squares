@@ -1,6 +1,8 @@
-FROM golang:1.10
+FROM golang:1.12
 
 WORKDIR /go/src/football-squares
+
+ENV GO111MODULE=on
 
 COPY . .
 

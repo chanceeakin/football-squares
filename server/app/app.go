@@ -6,9 +6,21 @@ import (
 
 	controllers "football-squares/server/controllers"
 	db "football-squares/server/db"
-	middleware "football-squares/server/middleware"
-	"github.com/gorilla/mux"
+	routes "football-squares/server/routes"
+	"github.com/urfave/negroni"
 )
+
+// UGH YES.
+// https://thenewstack.io/make-a-restful-json-api-go/
+
+// Routes is the slice of those configs
+var Routes = make([]routes.Route, 0)
+
+func init() {
+	Routes = append(Routes, controllers.GameRoutes()...)
+	Routes = append(Routes, controllers.MessageRoutes()...)
+	Routes = append(Routes, controllers.UserRoutes()...)
+}
 
 // Run the app
 func Run(d *db.InitData) {
@@ -16,15 +28,9 @@ func Run(d *db.InitData) {
 	db.Init(d)
 	defer db.CleanUp()
 
-r := mux.NewRouter()
-	r.Handle("/messages", middleware.Logger(http.HandlerFunc(controllers.GetMessages)))
-	r.Handle("/message", middleware.Logger(http.HandlerFunc(controllers.MessageHandler)))
-	r.Handle("/games", middleware.Logger(http.HandlerFunc(controllers.GetGames)))
-	r.Handle("/game", middleware.Logger(http.HandlerFunc(controllers.GameHandler)))
-	r.Handle("/game/messages", middleware.Logger(http.HandlerFunc(controllers.MessageByGameHandler)))
-	r.Handle("/users", middleware.Logger(http.HandlerFunc(controllers.UsersHandlers)))
-	r.Handle("/user", middleware.Logger(http.HandlerFunc(controllers.UserHandlers)))
-	r.Handle("/", middleware.Logger(http.HandlerFunc(controllers.ErrorHandler)))
-	log.Fatal(http.ListenAndServe(uriString, r))
+	r := routes.NewRouter(Routes)
+	n := negroni.Classic() // Includes some default middlewares
+	n.UseHandler(r)
+	log.Fatal(http.ListenAndServe(uriString, n))
 
 }

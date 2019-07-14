@@ -4,9 +4,34 @@ import (
 	"encoding/json"
 	user "football-squares/server/models/user"
 	response "football-squares/server/response"
+	routes "football-squares/server/routes"
 	"log"
 	"net/http"
 )
+
+// UserRoutes is the declaration for all routes
+func UserRoutes() []routes.Route {
+	userRoutes := make([]routes.Route, 3)
+	userRoutes = append(userRoutes, routes.Route{
+		Name:        "Users",
+		Path:        "/users",
+		HandlerFunc: getUsers,
+		Method:      "GET",
+	},
+		routes.Route{
+			Name:        "Get User",
+			Path:        "/user",
+			HandlerFunc: getUser,
+			Method:      "GET",
+		},
+		routes.Route{
+			Name:        "Post User",
+			Path:        "/user",
+			HandlerFunc: postUser,
+			Method:      "POST",
+		})
+	return userRoutes
+}
 
 func getUsers(w http.ResponseWriter, r *http.Request) {
 	userMap := user.Users{}
@@ -60,35 +85,4 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.SendJSON(w, out)
-}
-
-// UsersHandlers is the switch for REST Methods
-func UsersHandlers(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		getUsers(w, r)
-	case http.MethodPost:
-	case http.MethodPut:
-		// Update an existing record.
-	case http.MethodDelete:
-		// Remove the record.
-	default:
-		http.Error(w, `Not Found`, http.StatusNotFound)
-	}
-}
-
-// UserHandlers is the switch for REST Methods
-func UserHandlers(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		getUser(w, r)
-	case http.MethodPost:
-		postUser(w, r)
-	case http.MethodPut:
-		// Update an existing record.
-	case http.MethodDelete:
-		// Remove the record.
-	default:
-		http.Error(w, `Not Found`, http.StatusNotFound)
-	}
 }
