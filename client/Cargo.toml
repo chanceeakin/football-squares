@@ -1,10 +1,10 @@
 [package]
-authors = ["Hunter Wumpfrey <hw@bottomlesspit.net>"]
+authors = ["Chance Eakin"]
 edition = "2018"
-name = "hunt-the-wumpus"
+name = "football-squares-client"
 version = "0.1.0"
 [[bin]]
-name = "hunt"
+name = "client"
 path = "src/main.rs"
 
 [dependencies]
@@ -14,5 +14,5 @@ stdweb = "0.4"
 git = "https://github.com/DenisKolodin/yew"
 
 [lib]
-name = "hunt_the_wumpus"
+name = "client"
 path = "src/lib.rs"

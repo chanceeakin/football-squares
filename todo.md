@@ -24,23 +24,24 @@ scripting
 ## Code
 
 - database
+  - THINK WE'RE DONE!
 
-  - users
-    - password field
-    - game admin(s)
+* error handler
 
-- session storage
+  - figure out a way to deal with inputs missing their proper response bodies
+
+* session storage
 
   - redis
 
-- endpoints
+* endpoints
   - login/logout
     - JWT?
   - users
     - password
   - games
+    - SET game admin(s)
     - put
-    - delete/archive
     - join a game
     - leave a game
     - open a game
@@ -48,8 +49,8 @@ scripting
   - bets
     - getBets
     - postaBet
-- testing strategy for golang
+* testing strategy for golang
   - do some research
 
-* frontend
+- frontend
   - reimagine it in yew. because why not

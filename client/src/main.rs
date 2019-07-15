@@ -1,7 +1,7 @@
-extern crate hunt_the_wumpus;
+extern crate client;
 extern crate yew;
 
-use hunt_the_wumpus::Model;
+use client::Model;
 use yew::prelude::App;
 
 fn main() {

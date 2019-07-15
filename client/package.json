@@ -8,10 +8,10 @@
   "scripts": {
     "build:js": "rollup -c",
     "build:rs": "cargo web deploy --release",
-    "build:scss": "node-sass --include-path scss scss/hunt.scss css/hunt.css",
-    "build:css": "postcss --use autoprefixer -o static/hunt.css css/hunt.css",
+    "build:scss": "node-sass --include-path scss scss/client.scss css/client.css",
+    "build:css": "postcss --use autoprefixer -o static/hunt.css css/client.css",
     "build:style": "run-s build:scss build:css",
-    "build:copy": "cp target/deploy/hunt.css release/ && cp target/deploy/hunt.wasm release/ && cp target/deploy/index.html release/ && cp target/deploy/favicon.ico release/",
+    "build:copy": "cp target/deploy/client.css release/ && cp target/deploy/client.wasm release/ && cp target/deploy/index.html release/ && cp target/deploy/favicon.ico release/",
     "build": "run-s clean:deploy build:rs build:js build:style build:copy",
     "clean:deploy": "rm -rf /release",
     "prod": "run-s build serve",
