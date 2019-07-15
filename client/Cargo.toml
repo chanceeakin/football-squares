@@ -1,0 +1,18 @@
+[package]
+authors = ["Chance Eakin"]
+edition = "2018"
+name = "football-squares-client"
+version = "0.1.0"
+[[bin]]
+name = "client"
+path = "src/main.rs"
+
+[dependencies]
+stdweb = "0.4"
+
+[dependencies.yew]
+git = "https://github.com/DenisKolodin/yew"
+
+[lib]
+name = "client"
+path = "src/lib.rs"

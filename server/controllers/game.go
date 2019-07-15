@@ -5,12 +5,45 @@ import (
 	common "football-squares/server/common"
 	game "football-squares/server/models/games"
 	response "football-squares/server/response"
+	routes "football-squares/server/routes"
+	"io"
+
 	"log"
 	"net/http"
 )
 
-// GetGames gets all the messages. This should probably be on a per...game basis
-func GetGames(w http.ResponseWriter, r *http.Request) {
+// GameRoutes is the declaration for all routes
+func GameRoutes() []routes.Route {
+	gameRoutes := make([]routes.Route, 3)
+	gameRoutes = append(gameRoutes, routes.Route{
+		Name:        "Games",
+		Path:        "/games",
+		HandlerFunc: getGames,
+		Method:      "GET",
+	},
+		routes.Route{
+			Name:        "Game",
+			Path:        "/game",
+			HandlerFunc: getGame,
+			Method:      "GET",
+		},
+		routes.Route{
+			Name:        "Game",
+			Path:        "/game",
+			HandlerFunc: postGame,
+			Method:      "POST",
+		},
+		routes.Route{
+			Name:        "Archive Game",
+			Path:        "/game/archive",
+			HandlerFunc: archiveGame,
+			Method:      "PUT",
+		},
+	)
+	return gameRoutes
+}
+
+func getGames(w http.ResponseWriter, r *http.Request) {
 	gamesArr := game.Games{}
 
 	err := game.QueryGames(&gamesArr)
@@ -66,18 +99,30 @@ func postGame(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// GameHandler is the switch for REST Methods
-func GameHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		getGame(w, r)
-	case http.MethodPost:
-		postGame(w, r)
-	case http.MethodPut:
-		// Update an existing record.
-	case http.MethodDelete:
-		// Remove the record.
-	default:
-		http.Error(w, `Not Found`, http.StatusNotFound)
+func archiveGame(w http.ResponseWriter, r *http.Request) {
+	var err error
+	input := new(common.ID)
+	var out common.Success
+	err = json.NewDecoder(r.Body).Decode(input)
+
+	// fmt.Print(input)
+	// if *input.ID == "" {
+	// 	response.SendError(w, err, http.StatusBadRequest)
+	// 	return
+	// }
+
+	switch {
+	case err == io.EOF:
+	case err != nil:
+		response.SendError(w, err, http.StatusBadRequest)
+		return
 	}
+
+	out, err = game.ArchiveGame(input)
+	if err != nil {
+		response.SendError(w, err, http.StatusInternalServerError)
+		return
+	}
+	response.SendJSON(w, out)
+
 }

@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+const insertOneSQL = `INSERT INTO messages (message_text, created_at, user_id, game_id)
+	VALUES ($1, $2, $3, $4)
+  RETURNING id;`
+const selectFromGameSQL = `SELECT * FROM messages where game_id=$1;`
+const selectAllSQL = `SELECT * FROM messages;`
+
 // Message data object
 type Message struct {
 	ID          string     `json:"id"`
@@ -34,12 +40,8 @@ type Messages struct {
 // PostMessageQuery posts a single message
 func PostMessageQuery(messageInput *Input) (common.ID, error) {
 	var err error
-	insertStatement := `
-	INSERT INTO messages (message_text, created_at, user_id, game_id)
-	VALUES ($1, $2, $3, $4)
-	RETURNING id;`
 	out := common.ID{}
-	err = db.DB.QueryRow(insertStatement, &messageInput.MessageText, time.Now(), &messageInput.UserID, &messageInput.GameID).Scan(&out.ID)
+	err = db.DB.QueryRow(insertOneSQL, &messageInput.MessageText, time.Now(), &messageInput.UserID, &messageInput.GameID).Scan(&out.ID)
 	if err != nil {
 		log.Print(err)
 		return out, err
@@ -50,7 +52,7 @@ func PostMessageQuery(messageInput *Input) (common.ID, error) {
 
 // QueryMessages returns all messages
 func QueryMessages(messages *Messages) error {
-	rows, err := db.DB.Query(`SELECT * FROM messages;`)
+	rows, err := db.DB.Query(selectAllSQL)
 	if err != nil {
 		return err
 	}
@@ -81,7 +83,7 @@ func QueryMessages(messages *Messages) error {
 // QueryMessagesByGame returns a games' worth of messages
 func QueryMessagesByGame(i *common.ID) (*Messages, error) {
 	val := Messages{}
-	rows, err := db.DB.Query(`SELECT * FROM messages where game_id=$1;`, &i.ID)
+	rows, err := db.DB.Query(selectFromGameSQL, &i.ID)
 	if err != nil {
 		return nil, err
 	}

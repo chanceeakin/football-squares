@@ -5,14 +5,44 @@ import (
 	common "football-squares/server/common"
 	message "football-squares/server/models/message"
 	response "football-squares/server/response"
+	routes "football-squares/server/routes"
 	// post gres
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 )
 
-// GetMessages gets all the messages. This should probably be on a per...game basis
-func GetMessages(w http.ResponseWriter, r *http.Request) {
+// MessageRoutes is the declaration for all routes
+func MessageRoutes() []routes.Route {
+	messageRoutes := make([]routes.Route, 4)
+	messageRoutes = append(messageRoutes, routes.Route{
+		Name:        "Messages",
+		Path:        "/messages",
+		HandlerFunc: getMessages,
+		Method:      "GET",
+	},
+		routes.Route{
+			Name:        "Message",
+			Path:        "/message",
+			HandlerFunc: getMessage,
+			Method:      "GET",
+		},
+		routes.Route{
+			Name:        "Post Message",
+			Path:        "/message",
+			HandlerFunc: postMessage,
+			Method:      "POST",
+		},
+		routes.Route{
+			Name:        "Messages by Game",
+			Path:        "/messages/game",
+			HandlerFunc: messageByGameHandler,
+			Method:      "GET",
+		})
+	return messageRoutes
+}
+
+func getMessages(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, `Not Found`, http.StatusNotFound)
 		return
@@ -72,7 +102,7 @@ func getMessage(w http.ResponseWriter, r *http.Request) {
 }
 
 //MessageByGameHandler handles returning messages per game
-func MessageByGameHandler(w http.ResponseWriter, r *http.Request) {
+func messageByGameHandler(w http.ResponseWriter, r *http.Request) {
 	var input common.ID
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
@@ -94,20 +124,4 @@ func MessageByGameHandler(w http.ResponseWriter, r *http.Request) {
 
 	response.SendJSON(w, messageArr)
 
-}
-
-// MessageHandler is the switch for REST Methods
-func MessageHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		getMessage(w, r)
-	case http.MethodPost:
-		postMessage(w, r)
-	case http.MethodPut:
-		// Update an existing record.
-	case http.MethodDelete:
-		// Remove the record.
-	default:
-		http.Error(w, `Not Found`, http.StatusNotFound)
-	}
 }
