@@ -6,8 +6,11 @@ import (
 	message "football-squares/server/models/message"
 	response "football-squares/server/response"
 	routes "football-squares/server/routes"
+	"io"
 	// post gres
 	_ "github.com/lib/pq"
+
+	"gopkg.in/go-playground/validator.v9"
 	"log"
 	"net/http"
 )
@@ -64,19 +67,22 @@ func postMessage(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var messageInput message.Input
 	var out common.ID
+	v := validator.New()
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&messageInput)
+	defer r.Body.Close()
+	err = v.Struct(messageInput)
 
-	if err != nil {
-		log.Print(err)
-		http.Error(w, `Bad Request`, http.StatusBadRequest)
+	switch {
+	case err == io.EOF:
+	case err != nil:
+		response.SendError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	out, err = message.PostMessageQuery(&messageInput)
 	if err != nil {
-		log.Print(err)
-		http.Error(w, `Internal Error`, http.StatusInternalServerError)
+		response.SendError(w, err, http.StatusInternalServerError)
 		return
 	}
 	response.SendJSON(w, out)
@@ -86,15 +92,15 @@ func getMessage(w http.ResponseWriter, r *http.Request) {
 	var input common.ID
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
+	defer r.Body.Close()
 	if err != nil {
-		http.Error(w, `Bad Request`, http.StatusBadRequest)
+		response.SendError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	val, err1 := message.QueryMessage(&input)
 	if err1 != nil {
-		log.Print(err1)
-		http.Error(w, `Internal Error`, http.StatusInternalServerError)
+		response.SendError(w, err1, http.StatusInternalServerError)
 		return
 	}
 
@@ -104,21 +110,23 @@ func getMessage(w http.ResponseWriter, r *http.Request) {
 //MessageByGameHandler handles returning messages per game
 func messageByGameHandler(w http.ResponseWriter, r *http.Request) {
 	var input common.ID
+	v := validator.New()
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
-	if err != nil {
-		http.Error(w, `Bad Request`, http.StatusBadRequest)
+
+	defer r.Body.Close()
+	err = v.Struct(input)
+
+	switch {
+	case err == io.EOF:
+	case err != nil:
+		response.SendError(w, err, http.StatusBadRequest)
 		return
 	}
 
-	if r.Method != http.MethodGet {
-		log.Print("Message By Game not post")
-		http.Error(w, `Wrong Method`, http.StatusMethodNotAllowed)
-	}
 	messageArr, err := message.QueryMessagesByGame(&input)
 	if err != nil {
-		log.Print(err)
-		http.Error(w, `Internal Error`, http.StatusInternalServerError)
+		response.SendError(w, err, http.StatusInternalServerError)
 		return
 	}
 

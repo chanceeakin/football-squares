@@ -38,17 +38,12 @@ type Users struct {
 	Users []NoPasswordUser
 }
 
-// GetInput is the input type for finding a single user.
-type GetInput struct {
-	ID string `json:"id"`
-}
-
 //Input is for inserting a user
 type Input struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
+	FirstName string `json:"first_name" validate:"required"`
+	LastName  string `json:"last_name" validate:"required"`
+	Email     string `json:"email" validate:"required"`
+	Password  string `json:"password" validate:"required"`
 }
 
 // QueryUsers queries the db for existing users.
@@ -82,7 +77,7 @@ func QueryUsers(users *Users) error {
 }
 
 // QueryUser finds a single user
-func QueryUser(input *GetInput) (NoPasswordUser, error) {
+func QueryUser(input *common.ID) (NoPasswordUser, error) {
 	returnUser := NoPasswordUser{}
 	row := db.DB.QueryRow(selectOneSQL, &input.ID)
 	err := row.Scan(

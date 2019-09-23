@@ -29,6 +29,8 @@ scripting
 * error handler
 
   - figure out a way to deal with inputs missing their proper response bodies
+  - validate input in response body
+  - https://husobee.github.io/golang/validation/2016/01/08/input-validation.html
 
 * session storage
 

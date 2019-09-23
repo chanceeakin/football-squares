@@ -26,10 +26,10 @@ type Message struct {
 
 // Input for incoming inserted messages
 type Input struct {
-	MessageText string `json:"message_text"`
-	Archived    bool   `json:"archived"`
-	UserID      string `json:"user_id"`
-	GameID      string `json:"game_id"`
+	MessageText string `json:"message_text" validate:"required"`
+	Archived    bool   `json:"archived" validate:"required"`
+	UserID      string `json:"user_id" validate:"required"`
+	GameID      string `json:"game_id" validate:"required"`
 }
 
 // Messages is a slice of message.

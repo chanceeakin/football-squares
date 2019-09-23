@@ -6,7 +6,7 @@ import (
 	user "football-squares/server/models/user"
 	response "football-squares/server/response"
 	routes "football-squares/server/routes"
-	"log"
+	"gopkg.in/go-playground/validator.v9"
 	"net/http"
 )
 
@@ -39,8 +39,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 
 	err := user.QueryUsers(&userMap)
 	if err != nil {
-		log.Print(err)
-		http.Error(w, `Internal Error`, http.StatusInternalServerError)
+		response.SendError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -48,18 +47,20 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
-	var input user.GetInput
+	var input common.ID
+	v := validator.New()
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
+	err = v.Struct(input)
+	defer r.Body.Close()
 	if err != nil {
-		http.Error(w, `Bad Request`, http.StatusBadRequest)
+		response.SendError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	val, err1 := user.QueryUser(&input)
 	if err1 != nil {
-		log.Print(err1)
-		http.Error(w, `Internal Error`, http.StatusInternalServerError)
+		response.SendError(w, err1, http.StatusInternalServerError)
 		return
 	}
 
@@ -70,19 +71,20 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var userInput user.Input
 	var out common.ID
+	v := validator.New()
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&userInput)
+	defer r.Body.Close()
+	err = v.Struct(userInput)
 
 	if err != nil {
-		log.Print(err)
-		http.Error(w, `Bad Request`, http.StatusBadRequest)
+		response.SendError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	out, err = user.InsertUser(&userInput)
 	if err != nil {
-		log.Print(err)
-		http.Error(w, `Internal Error`, http.StatusInternalServerError)
+		response.SendError(w, err, http.StatusInternalServerError)
 		return
 	}
 	response.SendJSON(w, out)

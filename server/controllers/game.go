@@ -6,8 +6,8 @@ import (
 	game "football-squares/server/models/games"
 	response "football-squares/server/response"
 	routes "football-squares/server/routes"
+	"gopkg.in/go-playground/validator.v9"
 	"io"
-
 	"log"
 	"net/http"
 )
@@ -15,12 +15,13 @@ import (
 // GameRoutes is the declaration for all routes
 func GameRoutes() []routes.Route {
 	gameRoutes := make([]routes.Route, 3)
-	gameRoutes = append(gameRoutes, routes.Route{
-		Name:        "Games",
-		Path:        "/games",
-		HandlerFunc: getGames,
-		Method:      "GET",
-	},
+	gameRoutes = append(gameRoutes,
+		routes.Route{
+			Name:        "Games",
+			Path:        "/games",
+			HandlerFunc: getGames,
+			Method:      "GET",
+		},
 		routes.Route{
 			Name:        "Game",
 			Path:        "/game",
@@ -59,17 +60,20 @@ func getGames(w http.ResponseWriter, r *http.Request) {
 // GetGame gets a single game
 func getGame(w http.ResponseWriter, r *http.Request) {
 	var input common.ID
+	v := validator.New()
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
+
+	err = v.Struct(input)
+	defer r.Body.Close()
 	if err != nil {
-		http.Error(w, `Bad Request`, http.StatusBadRequest)
+		response.SendError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	val, err1 := game.QueryGame(&input)
 	if err1 != nil {
-		log.Print(err1)
-		http.Error(w, `Internal Error`, http.StatusInternalServerError)
+		response.SendError(w, err1, http.StatusInternalServerError)
 		return
 	}
 
@@ -79,9 +83,13 @@ func getGame(w http.ResponseWriter, r *http.Request) {
 func postGame(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var input game.PostInput
+	v := validator.New()
 	var out common.ID
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&input)
+	defer r.Body.Close()
+
+	err = v.Struct(input)
 
 	if err != nil {
 		log.Print(err)
@@ -96,20 +104,18 @@ func postGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.SendJSON(w, out)
-
 }
 
 func archiveGame(w http.ResponseWriter, r *http.Request) {
 	var err error
+	v := validator.New()
 	input := new(common.ID)
 	var out common.Success
-	err = json.NewDecoder(r.Body).Decode(input)
 
-	// fmt.Print(input)
-	// if *input.ID == "" {
-	// 	response.SendError(w, err, http.StatusBadRequest)
-	// 	return
-	// }
+	err = json.NewDecoder(r.Body).Decode(input)
+	defer r.Body.Close()
+
+	err = v.Struct(input)
 
 	switch {
 	case err == io.EOF:

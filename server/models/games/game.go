@@ -31,7 +31,7 @@ type Games struct {
 
 // PostInput is the input for a new game
 type PostInput struct {
-	Title string `json:"title"`
+	Title string `json:"title" validate:"required"`
 }
 
 // QueryGames for a series of games
